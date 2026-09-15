@@ -57,4 +57,39 @@ public class Image {
             System.err.println("Erreur lors de l'écriture du fichier : " + e.getMessage());
         }
     }
+	
+	/**
+	 * Sauvegarde de l'image au format binaire
+	 */
+	public void write_bin(String filename) throws IOException {
+		try {
+            FileWriter writer = new FileWriter(filename);
+
+            writer.write("P6\n");
+            // Écriture des dimensions
+			writer.write(getWidth()+ " " + getHeight() +"\n");
+            // Écriture de la valeur maximal
+			writer.write("255\n");
+            // Écriture des pixels
+			
+			for(int i = 0 ; i < getHeight() ; i++) {
+				
+				for(int j = 0 ; j < getWidth() ; j++) {
+					byte[] pixelOctet = new byte[3];
+					byte[0] = pixels[i][j][0];
+					byte[1] = pixels[i][j][1];
+					byte[2] = pixels[i][j][2];
+					// TODO a terminer
+					writer.write(Byte.toString(]  pixels[i][j][2] + " "));
+				}
+				
+            }
+			writer.write("\n");
+            writer.close(); // Fermeture du fichier
+
+            System.out.println("Image PPM créée avec succès !");
+        } catch (IOException e) {
+            System.err.println("Erreur lors de l'écriture du fichier : " + e.getMessage());
+        }
+	}
 }

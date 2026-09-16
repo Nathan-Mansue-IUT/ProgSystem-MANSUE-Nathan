@@ -1,3 +1,4 @@
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -58,34 +59,40 @@ public class Image {
         }
     }
 	
+	/*public static read_txt(String filename) throws IOException {
+        // TODO
+    } */
+	
 	/**
 	 * Sauvegarde de l'image au format binaire
 	 */
 	public void write_bin(String filename) throws IOException {
+		
+		byte[] aRetourner = new byte[this.getWidth() * this.getHeight() * 3];
+		
+		int curseur = 0;
+		
+		int passage;
+		
 		try {
-            FileWriter writer = new FileWriter(filename);
+			
+            FileOutputStream fos = new FileOutputStream(filename);
 
-            writer.write("P6\n");
-            // Écriture des dimensions
-			writer.write(getWidth()+ " " + getHeight() +"\n");
-            // Écriture de la valeur maximal
-			writer.write("255\n");
-            // Écriture des pixels
+            fos.write(("P6\n"+this.getWidth()+ " " + this.getHeight() +"\n"+"255\n").getBytes());
+  
 			
 			for(int i = 0 ; i < getHeight() ; i++) {
 				
 				for(int j = 0 ; j < getWidth() ; j++) {
-					byte[] pixelOctet = new byte[3];
-					byte[0] = pixels[i][j][0];
-					byte[1] = pixels[i][j][1];
-					byte[2] = pixels[i][j][2];
-					// TODO a terminer
-					writer.write(Byte.toString(]  pixels[i][j][2] + " "));
+					for(int k=0 ; k < 3 ; k++) {
+						passage = this.pixels[i][j][k];
+						aRetourner[curseur] = (byte) (passage & 0xFF);
+						curseur++;
+					}
 				}
-				
             }
-			writer.write("\n");
-            writer.close(); // Fermeture du fichier
+			fos.write(aRetourner);
+            fos.close(); // Fermeture du fichier
 
             System.out.println("Image PPM créée avec succès !");
         } catch (IOException e) {

@@ -10,47 +10,42 @@
 public class Utils {
 
     /**
-	 * Ecrit a partir de l'offset en little-endian
+	 * Ecrit a partir de l'offset en big-endian
 	 */
     public static int writeInt(byte[] memory, int offset, int value) {
-		memory[offset] = (byte) (value & 0xFF);
-		memory[offset + 1] = (byte) (value >> 8 & 0xFF); // décalage de 8 bits
-		memory[offset + 2] = (byte) (value >> 16 & 0xFF);
-		memory[offset + 3] = (byte) (value >> 24 & 0xFF);
+		memory[offset] = (byte) (value >> 24 & 0xFF);
+		memory[offset + 1] = (byte) (value >> 16 & 0xFF); // décalage de 8 bits
+		memory[offset + 2] = (byte) (value >> 8 & 0xFF);
+		memory[offset + 3] = (byte) (value & 0xFF);
         return 4;
     }
 
     public static int readInt(byte[] memory, int offset) {
 		int resultat;
-		resultat = (int) (memory[offset] & 0xFF);  
-		resultat = (int) (memory[offset + 1] & 0xFF); 
-		resultat = (int) (memory[offset + 2] & 0xFF); 
-		resultat = (int) (memory[offset + 3] & 0xFF); 
-        return 0;
+		resultat = (int)(memory[offset] & 0xFF) << 24;   // poids FORT   -> en premier
+        resultat |= (int)(memory[offset + 1] & 0xFF) << 16;
+        resultat |= (int)(memory[offset + 2] & 0xFF) << 8;
+        resultat |= (int)(memory[offset + 3] & 0xFF);
+        return resultat;
     }
 
     public static int writeShort(byte[] memory, int offset, short value) {
-		memory[offset] = (byte) (value & 0xFF);
-		memory[offset + 1] = (byte) (value >> 8 & 0xFF);
+		memory[offset] = (byte) (value >> 8 & 0xFF);
+		memory[offset + 1] = (byte) (value & 0xFF);
         return 2;
     }
 
     public static short readShort(byte[] memory, int offset) {
-		short resultat;
-		resultat = (short) (memory[offset] & 0xFF);
-		resultat = (short) (memory[offset + 1] & 0xFF);
-        return 0;
+		int resultat1;
+		resultat1 = (int) (memory[offset] & 0xFF) << 8;
+		resultat1 |= (int) (memory[offset + 1] & 0xFF);
+		short resultat2 = (short) resultat1;
+        return resultat2;
     }
 	
 	public static int writeLong(byte[] memory, int offset, long value) {
-		memory[offset] = (byte) (value & 0xFF);
-		memory[offset + 1] = (byte) (value >> 8 & 0xFF); // décalage de 8 bits
-		memory[offset + 2] = (byte) (value >> 16 & 0xFF);
-		memory[offset + 3] = (byte) (value >> 24 & 0xFF);
-		memory[offset + 4] = (byte) (value >> 32 & 0xFF);
-		memory[offset + 5] = (byte) (value >> 40 & 0xFF);
-		memory[offset + 6] = (byte) (value >> 48 & 0xFF);
-		memory[offset + 7] = (byte) (value >> 56 & 0xFF);
+		memory[offset] = (byte) (value >> 56 & 0xFF);
+		memory[offset + 1] = (byte) (value >> 56 & 0xFF);
         return 8;
     }
 

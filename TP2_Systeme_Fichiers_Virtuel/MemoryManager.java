@@ -68,4 +68,59 @@ public class MemoryManager {
     public byte[] getFilesystemMemory() {
         return memory;
     }
+	
+	public boolean setBlockUsed(int blockNumber, boolean used) {
+		if (blockNumber < 0 ||
+			blockNumber >= NUM_BLOCKS) {
+			return false;
+        }
+
+		int byteIndex = blockNumber / 8;
+		int bitPosition = blockNumber % 8;
+		int offset = BITMAP_OFFSET + byteIndex;
+
+		if (used) {
+			// Positionner le bit à 1.
+			memory[offset] |= 0x01 << bitPosition;
+		} else {
+			// Positionner le bit à 0.
+			memory[offset] &= ~(0x01 << bitPosition); /* ~ inverse du bit */
+		}
+
+		return true;
+	}
+
+	public int isBlockUsed(int blockNumber) {
+
+		if (blockNumber < 0 ||
+			blockNumber >= NUM_BLOCKS) {
+			return -1;
+		}
+
+		// Calculer byteIndex.
+		int byteIndex = blockNumber / 8;
+		// Calculer bitPosition.
+		int bitPosition = blockNumber % 8;
+		int offset = BITMAP_OFFSET + byteIndex;
+
+		// Lire le bit. 
+		return (memory[offset] >> bitPosition) & 0x01;
+	}
+
+	public int allocateBlock() {
+
+		// TODO:
+		// Parcourir les blocs de données :
+		// 129 .. NUM_BLOCKS - 1.
+		int blocNumero = 129;
+		while(isBlockUsed(blocNumero) == 1 && blocNumero < NUM_BLOCKS) {
+			blocNumero++;
+		}
+		// Retourner le premier bloc libre.
+		
+		// Le marquer immédiatement comme utilisé.
+        setBlockUsed(blocNumero, 1);
+		return blocNumero;
+	}
+
 }

@@ -109,17 +109,17 @@ public class MemoryManager {
 
 	public int allocateBlock() {
 
-		// TODO:
 		// Parcourir les blocs de données :
 		// 129 .. NUM_BLOCKS - 1.
 		int blocNumero = 129;
 		while(isBlockUsed(blocNumero) == 1 && blocNumero < NUM_BLOCKS) {
 			blocNumero++;
-		}
-		// Retourner le premier bloc libre.
+		}	
 		
 		// Le marquer immédiatement comme utilisé.
-        setBlockUsed(blocNumero, 1);
+        setBlockUsed(blocNumero, true);
+		
+		// Retourner le premier bloc libre.
 		return blocNumero;
 	}
 

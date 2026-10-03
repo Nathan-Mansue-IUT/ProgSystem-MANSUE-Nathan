@@ -27,6 +27,21 @@ public class Inode {
         // Lire la taille à offset + 8.
         return Utils.readInt(this.memoryManager.getFilesystemMemory(), this.getInodeOffset() + 8);
     }
+	
+	public long getFileCreationDate() {
+        // Lire la date de creation à offset + 12.
+        return Utils.readLong(this.memoryManager.getFilesystemMemory(), this.getInodeOffset() + 12);
+    }
+	
+	public short getFilePermissions() {
+		// Lire les permissions à offset + 72.
+		return Utils.readShort(this.memoryManager.getFilesystemMemory(), this.getInodeOffset() + 72);
+	}
+	
+	public int getFileNombreLiens() {
+		// Lire les liens à offset + 74.
+		return Utils.readInt(this.memoryManager.getFilesystemMemory(), this.getInodeOffset() + 74);
+    }
 
     public int[] getDirectPointers() {
 
@@ -43,6 +58,11 @@ public class Inode {
 
         return pointers;
     }
+	
+	public int getFileIndirectPointer() {
+	    // Lire le pointeurs indirect à offset + 68.
+ 		return Utils.readInt(this.memoryManager.getFilesystemMemory(), this.getInodeOffset() + 68);
+	}
 	
 	public void writeToMemory(int fileType, int fileSize, long creationTime,
                               long modificationTime, int[] directPointers,

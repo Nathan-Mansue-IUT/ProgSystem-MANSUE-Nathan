@@ -1,3 +1,6 @@
+import java.io.FileReader;
+import java.io.IOException;
+
 public class TestRunner {
 	
 	public static void main(String[] args) {
@@ -8,6 +11,18 @@ public class TestRunner {
 		TestRunner.testStep6();
 		TestRunner.testStep7();
 		TestRunner.testStep8();
+		TestRunner.testStep9();
+		TestRunner.testStep9Supplementaire();
+		
+		if (args.length > 0) {
+            testExternalFile(args[0]);
+		} else {
+			System.out.println(
+					"[INFO] Aucun fichier externe fourni.");
+		}
+
+		System.out.println(
+				"=== TOUS LES TESTS SONT TERMINÉS ===");
 	}
 	
 	public static void testStep2() {
@@ -345,5 +360,227 @@ public class TestRunner {
 				"Le second fichier doit être vide";
 
 		System.out.println("[OK] Étape 8 validée !");
+	}
+	
+	public static void testStep9() {
+		System.out.println("=== TEST ÉTAPE 9 : Entrées/Sorties Fichier ===");
+
+		VirtualFileSystem vfs =
+				new VirtualFileSystem();
+
+		assert vfs.createFile(
+				"/",
+				"test.txt");
+
+		String text =
+				"Contenu de test du système de fichiers";
+
+		byte[] original =
+				text.getBytes();
+
+		boolean writeOk =
+				vfs.writeFile(0, original);
+
+		assert writeOk :
+				"Erreur d'écriture";
+
+		Inode inode =
+				new Inode(
+						vfs.getMemoryManager(),
+						0);
+
+		assert inode.getFileSize()
+				== original.length :
+				"Taille d'inode incorrecte";
+
+		byte[] readBytes =
+				vfs.readFile(0);
+
+		assert readBytes != null :
+				"Buffer lu nul";
+
+		assert readBytes.length
+				== original.length :
+				"Longueur lue incorrecte";
+
+		for (int i = 0; i < original.length; i++) {
+			assert readBytes[i] == original[i] :
+					"Octet incorrect à l'indice " + i;
+		}
+
+		System.out.println("[OK] Étape 9 validée !");
+	}
+
+    public static void testStep9Supplementaire() {
+		
+		/* Fichier exactement égale a un bloc */
+		
+		System.out.println("=== TEST ÉTAPE 9 Supplémentaire: Tests avant étape 10 ===");
+
+		VirtualFileSystem vfs1 = new VirtualFileSystem();
+		
+		byte[] data = new byte[MemoryManager.BLOCK_SIZE];
+		
+		for(int remplissage = 0 ; remplissage < data.length ; remplissage++){
+		    data[remplissage] = (byte) remplissage;	
+		}
+
+        /* Test de création et d'écriture */
+        assert vfs1.createFile("","Test1.txt") : "Création du fichier échoué";
+		assert vfs1.writeFile(0, data) : "Ecriture du fichier échoué";
+		
+		Inode inodeT1 = new Inode(vfs1.getMemoryManager(), 0);
+		/* Test de la taille du fichier */
+		assert inodeT1.getFileSize() == 512 : "La taille du fichier doit être de 512";
+		int[] tableauPointeurs1 = inodeT1.getDirectPointers();
+		
+		assert tableauPointeurs1[0] != 0 : "Le premier pointeur doit être utilisé";
+		
+		for(int pointeur = 1 ; pointeur < tableauPointeurs1.length ; pointeur++) {
+		    assert tableauPointeurs1[pointeur] == 0 : "Le pointeur ne doit pas être utilisé";	
+	    } 	
+		
+		byte[] memory = vfs1.getMemoryManager().getFilesystemMemory();
+		int offsetPhysique = tableauPointeurs1[0] * MemoryManager.BLOCK_SIZE;
+		
+		for(int verification = 0 ; verification < 512 ; verification++) {
+		    assert memory[offsetPhysique + verification] == data[verification]
+                   : "Erreur octet " + verification + " incorrect";			
+		}
+		
+		byte[] contenuLu = vfs1.readFile(0);
+		
+		for(int verification = 0 ; verification < 512 ; verification++) {
+		    assert contenuLu[verification] == data[verification]
+                   : "Erreur octet " + verification + " incorrect";			
+		}
+		
+		/* Fichier de 513 octet */
+		
+		VirtualFileSystem vfs2 = new VirtualFileSystem();
+		
+		byte[] data2 = new byte[MemoryManager.BLOCK_SIZE + 1];
+		
+		for(int remplissage = 0 ; remplissage < data2.length ; remplissage++){
+		    data2[remplissage] = (byte) remplissage;	
+		}
+
+        assert vfs2.createFile("","Test2.txt") : "Création du fichier échoué";
+		assert vfs2.writeFile(0, data2) : "Ecriture du fichier échoué";
+		
+		Inode inodeT2 = new Inode(vfs2.getMemoryManager(), 0);
+		assert inodeT2.getFileSize() == 513 : "La taille du fichier doit être de 513";
+		int[] tableauPointeurs2 = inodeT2.getDirectPointers();
+		
+		assert tableauPointeurs2[0] != 0 : "Le premier pointeur doit être utilisé";
+		assert tableauPointeurs2[1] != 0 : "Le deuxième pointeur doit être utilisé";
+		
+		for(int pointeur = 2 ; pointeur < tableauPointeurs1.length ; pointeur++) {
+		    assert tableauPointeurs2[pointeur] == 0 : "Le pointeur ne doit pas être utilisé";	
+	    } 	
+		
+		byte[] memory2 = vfs2.getMemoryManager().getFilesystemMemory();
+		int offsetPhysique2 = tableauPointeurs2[0] * MemoryManager.BLOCK_SIZE;
+		
+		for(int verification = 0 ; verification < 512 ; verification++) {
+		    assert memory2[offsetPhysique2 + verification] == data2[verification]
+                   : "Erreur octet " + verification + " incorrect";			
+		}
+		
+		int offsetPhysique2bis = tableauPointeurs2[1] * MemoryManager.BLOCK_SIZE;
+		
+		for(int verification = 0 ; verification < 1 ; verification++) {
+		    assert memory2[offsetPhysique2bis + verification] == data2[512 + verification]
+                   : "Erreur octet " + verification + " incorrect";			
+		}
+		
+		byte[] contenuLu2 = vfs2.readFile(0);
+		
+		for(int verification = 0 ; verification < 513 ; verification++) {
+		    assert contenuLu2[verification] == data2[verification]
+                   : "Erreur octet " + verification + " incorrect";			
+		}
+		
+		/* Test de dépassement */
+		
+		VirtualFileSystem vfs3 = new VirtualFileSystem();
+		
+		byte[] data3 = new byte[11 * MemoryManager.BLOCK_SIZE];
+		
+		assert !vfs3.writeFile(0,data3) : "L'écriture doit échoué";
+		
+		System.out.println("[OK] Étape 9 Supplémentaire validée !");
+	}
+	
+	public static void testExternalFile(String filename) {
+
+		System.out.println(
+				"=== TEST FICHIER EXTERNE ===");
+
+		StringBuilder builder =
+				new StringBuilder();
+
+		try (FileReader reader =
+					 new FileReader(filename)) {
+
+			char[] buffer =
+					new char[1024];
+
+			int count;
+
+			while ((count =
+					reader.read(buffer)) != -1) {
+
+				builder.append(
+						buffer,
+						0,
+						count);
+			}
+
+		} catch (IOException e) {
+			throw new AssertionError(
+					"Impossible de lire le fichier externe",
+					e);
+		}
+
+		String content =
+				builder.toString();
+
+		byte[] original =
+				content.getBytes();
+
+		VirtualFileSystem vfs =
+				new VirtualFileSystem();
+
+		assert vfs.createFile(
+				"/",
+				"external.txt") :
+				"Impossible de créer le fichier VFS";
+
+		assert vfs.writeFile(
+				0,
+				original) :
+				"Impossible d'écrire le fichier externe";
+
+		byte[] recovered =
+				vfs.readFile(0);
+
+		assert recovered != null :
+				"Les données récupérées sont nulles";
+
+		assert recovered.length
+				== original.length :
+				"Taille du fichier différente";
+
+		for (int i = 0;
+			 i < original.length;
+			 i++) {
+
+			assert recovered[i] == original[i] :
+					"Différence à l'octet " + i;
+		}
+
+		System.out.println(
+				"[OK] Fichier externe correctement transféré !");
 	}
 }

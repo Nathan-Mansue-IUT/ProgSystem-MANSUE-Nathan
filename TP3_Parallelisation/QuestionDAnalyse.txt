@@ -1,0 +1,12 @@
+Performance : Quelle version est la plus rapide ? Pourquoi ?
+- Attendu : Version parallèle plus rapide grâce à l’utilisation de plusieurs cœurs CPU
+- Oui mais : Actuelement les calcules prenent de base peu de temps, 
+et la gestion des threads rajoute du temps
+- Au final la nouvelle version peu prendre un peu plus de temps que prévue, 
+mais dans une situation ou les calcules prennent beaucoup de temps -> c’est largement mieux.
+- Dans ce cas d’utilisation les ExecutorService et Callable sont à préviligier.
+
+Résultats : Les résultats sont-ils identiques entre les versions ? 
+Pourquoi n’y a-t-il pas de race condition ?
+- Point clé : Chaque thread travaille sur des données différentes et 
+l’agrégation se fait de manière séquentielle

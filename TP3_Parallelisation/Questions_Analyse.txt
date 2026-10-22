@@ -1,0 +1,24 @@
+Réponses aux questions : 
+
+1. Ordre des acquire()
+Si un producteur prend mutexBuffer puis attend placesLibres alors que le buffer est plein, 
+il garde le mutex en attendant. 
+Les consommateurs ont besoin de ce mutex pour retirer un élément et libérer une place. 
+Personne ne peut avancer : c’est un interblocage (deadlock). 
+Avec le bon ordre (placesLibres puis mutexBuffer), on n’attend jamais en détenant le mutex.
+
+2. Cohérence
+À la fin, totalProduit == totalConsomme (50/50 dans le cas déséquilibré), 
+et à tout moment placesLibres + elementsDisponibles = TAILLE_BUFFER (5). 
+Les sémaphores garantissent qu’il n’y a ni perte ni doublon, et le mutex protège les index et le tableau.
+
+3. Blocages possibles
+
+Mauvais ordre des acquire() : deadlock, comme au point 1.
+Déséquilibre du nombre d’éléments : si les consommateurs en demandent plus que ce qui est produit, 
+ils attendent indéfiniment sur elementsDisponibles. 
+Si les producteurs en produisent plus que ce qui est consommé, 
+ils restent bloqués sur placesLibres une fois le buffer plein.
+release() oublié ou mal placé (par exemple libérer le mauvais sémaphore), 
+ou exception levée entre acquire et release sans try/finally.
+Mauvaises valeurs initiales (par exemple mutexBuffer = 0 : personne n’entre jamais).
